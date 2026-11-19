@@ -28,7 +28,7 @@ flutter test
 flutter build apk --release
 ```
 
-The APK is published as the `cie-mobile-debuggable-release-apk` workflow artifact for 14 days. It is not yet signed for Play Store distribution.
+The APK is published as the `cie-mobile-release-apk` workflow artifact for 14 days. It is not yet signed for Play Store distribution.
 
 ## Next integration step
 
