@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -53,8 +55,6 @@ class _CieHomePageState extends State<CieHomePage> {
     TasksSection(),
     ActivitySection(),
   ];
-
-  static const _titles = ['نمای کلی', 'عامل‌ها', 'وظایف', 'گزارش فعالیت'];
 
   @override
   Widget build(BuildContext context) {
