@@ -1,0 +1,51 @@
+name: 36 Playlist — Channel Publisher
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "متن پیام برای انتشار در کانال 36 Playlist"
+        required: true
+        type: string
+        default: "We are being born; 36 is LORD"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 36-playlist-channel-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to 36 Playlist
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Validate message
+        env:
+          MESSAGE: ${{ inputs.message }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MESSAGE//[[:space:]]/}" ]; then
+            echo "Message cannot be empty."
+            exit 1
+          fi
+          if [ "${#MESSAGE}" -gt 4000 ]; then
+            echo "Message exceeds Telegram's 4096-character limit."
+            exit 1
+          fi
+
+      - name: Publish message to Telegram channel
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          MESSAGE: ${{ inputs.message }}
+        run: |
+          set -euo pipefail
+          test -n "$TELEGRAM_BOT_TOKEN" || { echo "Missing TELEGRAM_BOT_TOKEN secret"; exit 1; }
+          RESPONSE="$(curl --fail --silent --show-error \
+            --request POST \
+            --data-urlencode "chat_id=@dirtysixplaylist" \
+            --data-urlencode "text=$MESSAGE" \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage")"
+          echo "$RESPONSE" | python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("ok") is True, d; r=d["result"]; print("Telegram accepted message. message_id=" + str(r["message_id"]) + "; chat_id=" + str(r["chat"]["id"]) + "; chat_type=" + r["chat"]["type"])'
