@@ -28,6 +28,10 @@ class CieMobileApp extends StatelessWidget {
           ),
         ),
       ),
+      builder: (context, child) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: child ?? const SizedBox.shrink(),
+      ),
       home: const CieHomePage(),
     );
   }
