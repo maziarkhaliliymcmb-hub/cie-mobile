@@ -50,6 +50,20 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
+      - name: Send APK to Telegram
+        if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          test -n "$TELEGRAM_BOT_TOKEN"
+          test -n "$TELEGRAM_CHAT_ID"
+          curl --fail --silent --show-error \
+            -F "chat_id=${TELEGRAM_CHAT_ID}" \
+            -F "document=@build/app/outputs/flutter-apk/app-release.apk" \
+            -F "caption=CIE Mobile APK — build ${GITHUB_RUN_NUMBER}" \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
