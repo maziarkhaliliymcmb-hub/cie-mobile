@@ -7,6 +7,7 @@ struct ThirtySixOSMobileNodeApp: App {
     }
 }
 struct RootView: View {
+    @StateObject private var connection = ConnectionSettings()
     @AppStorage("36os.language") private var languageRaw = AppLanguage.english.rawValue
     @AppStorage("36os.density") private var densityRaw = InformationDensity.adaptive.rawValue
     private var language: AppLanguage { AppLanguage(rawValue: languageRaw) ?? .english }
@@ -26,5 +27,6 @@ struct RootView: View {
         }
         .tint(DS.primary)
         .environment(\.layoutDirection, language.direction)
+        .environmentObject(connection)
     }
 }
