@@ -95,6 +95,18 @@ struct FeatureListView: View {
         }
     }
 }
+struct ModuleRowLink: View {
+    let item: (String, String, String)
+    let language: AppLanguage
+    let density: InformationDensity
+    var body: some View {
+        NavigationLink {
+            FeatureListView(title: Copy.text(item.0, language), subtitle: Copy.text("not_implemented", language), symbol: item.1, language: language, density: density)
+        } label: {
+            DSCard { FeatureRow(title: Copy.text(item.0, language), subtitle: Copy.text("preview_data", language), symbol: item.1) }
+        }.buttonStyle(.plain)
+    }
+}
 struct ModuleListView: View {
     let title: String
     let subtitle: String
@@ -103,13 +115,8 @@ struct ModuleListView: View {
     let density: InformationDensity
     var body: some View {
         PageScaffold(title: title, subtitle: subtitle) {
-            ForEach(items.indices, id: \.self) { index in
-                let item = items[index]
-                NavigationLink {
-                    FeatureListView(title: Copy.text(item.0, language), subtitle: Copy.text("not_implemented", language), symbol: item.1, language: language, density: density)
-                } label: {
-                    DSCard { FeatureRow(title: Copy.text(item.0, language), subtitle: Copy.text("preview_data", language), symbol: item.1) }
-                }.buttonStyle(.plain)
+            ForEach(items.indices, id: \\.self) { index in
+                ModuleRowLink(item: items[index], language: language, density: density)
             }
         }
     }
@@ -167,12 +174,20 @@ struct SystemView: View {
                     Text(Copy.text("manual", language)).font(.caption).foregroundStyle(DS.secondary)
                 }
             }
-            ModuleListView(title: Copy.text("system", language), subtitle: "System configuration and governance", items: [
+            ForEach([
                 ("cie_connection","point.3.connected.trianglepath.dotted",""),("os_connection","externaldrive.connected.to.line.below",""),
                 ("creator","crown",""),("identity","person.badge.key",""),("security","shield.lefthalf.filled",""),
                 ("audit","doc.text.magnifyingglass",""),("backup","externaldrive",""),("versions","arrow.down.circle",""),
                 ("advanced","slider.horizontal.3","")
-            ], language: language, density: density)
+            ].indices, id: \\.self) { index in
+                let systemItems = [
+                    ("cie_connection","point.3.connected.trianglepath.dotted",""),("os_connection","externaldrive.connected.to.line.below",""),
+                    ("creator","crown",""),("identity","person.badge.key",""),("security","shield.lefthalf.filled",""),
+                    ("audit","doc.text.magnifyingglass",""),("backup","externaldrive",""),("versions","arrow.down.circle",""),
+                    ("advanced","slider.horizontal.3","")
+                ]
+                ModuleRowLink(item: systemItems[index], language: language, density: density)
+            }
             DSCard {
                 VStack(alignment: .leading, spacing: 10) {
                     Label(Copy.text("emergency", language), systemImage: "stop.circle").font(.headline).foregroundStyle(DS.danger)
