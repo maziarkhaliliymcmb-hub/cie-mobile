@@ -155,6 +155,7 @@ struct IntelligenceView: View {
     }
 }
 struct SystemView: View {
+    @EnvironmentObject private var connection: ConnectionSettings
     let language: AppLanguage
     let density: InformationDensity
     @Binding var languageRaw: String
@@ -169,6 +170,7 @@ struct SystemView: View {
     }
     var body: some View {
         PageScaffold(title: Copy.text("system", language), subtitle: "Identity · Security · Governance · Infrastructure") {
+            CIEConnectionCard(language: language, connection: connection)
             DSCard {
                 VStack(alignment: .leading, spacing: 14) {
                     SectionHeading(title: Copy.text("language", language))
@@ -191,6 +193,76 @@ struct SystemView: View {
                     Text(Copy.text("permissions_note", language)).font(.caption).foregroundStyle(DS.secondary)
                     Text(Copy.text("not_implemented", language)).font(.caption).foregroundStyle(DS.secondary)
                 }
+            }
+        }
+    }
+}
+
+struct CIEConnectionCard: View {
+    let language: AppLanguage
+    @ObservedObject var connection: ConnectionSettings
+
+    private var isPersian: Bool { language == .persian }
+    private var statusText: String {
+        switch connection.state {
+        case .notConfigured: return isPersian ? "هنوز آزمایش نشده" : "Not tested"
+        case .checking: return isPersian ? "در حال بررسی اتصال…" : "Checking connection…"
+        case .connected(let detail): return (isPersian ? "متصل · " : "Connected · ") + detail
+        case .failed(let reason): return (isPersian ? "خطا · " : "Failed · ") + reason
+        }
+    }
+    private var statusColor: Color {
+        switch connection.state {
+        case .connected: return DS.compute
+        case .checking: return DS.warning
+        case .failed: return DS.danger
+        case .notConfigured: return DS.secondary
+        }
+    }
+
+    var body: some View {
+        DSCard {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionHeading(title: Copy.text("connection_settings", language))
+                Text(Copy.text("cie_endpoint", language)).font(.caption).foregroundStyle(DS.secondary)
+                TextField("https://your-cie-domain", text: $connection.baseURL)
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.URL)
+                    .autocorrectionDisabled()
+                    .font(.footnote)
+                    .padding(12)
+                    .background(DS.elevated, in: RoundedRectangle(cornerRadius: 10))
+                    .foregroundStyle(DS.text)
+                Text(Copy.text("api_token", language)).font(.caption).foregroundStyle(DS.secondary)
+                SecureField("Bearer token", text: $connection.tokenDraft)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .padding(12)
+                    .background(DS.elevated, in: RoundedRectangle(cornerRadius: 10))
+                    .foregroundStyle(DS.text)
+                HStack {
+                    Button(Copy.text("save_token", language)) { connection.saveToken() }
+                        .buttonStyle(.borderedProminent)
+                        .tint(DS.primary)
+                        .disabled(connection.tokenDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    if connection.hasSavedToken {
+                        Button(Copy.text("remove_token", language), role: .destructive) { connection.removeToken() }
+                            .buttonStyle(.bordered)
+                    }
+                }
+                HStack(spacing: 8) {
+                    Circle().fill(statusColor).frame(width: 8, height: 8)
+                    Text(statusText).font(.caption).foregroundStyle(statusColor)
+                }
+                Button {
+                    Task { await connection.testConnection() }
+                } label: {
+                    Label(Copy.text("test_connection", language), systemImage: "antenna.radiowaves.left.and.right")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .disabled(!connection.hasSavedToken || connection.state == .checking)
+                Text(Copy.text("permissions_note", language)).font(.caption2).foregroundStyle(DS.secondary)
             }
         }
     }
