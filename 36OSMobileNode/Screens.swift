@@ -115,7 +115,7 @@ struct ModuleListView: View {
     let density: InformationDensity
     var body: some View {
         PageScaffold(title: title, subtitle: subtitle) {
-            ForEach(items.indices, id: \\.self) { index in
+            ForEach(items.indices, id: \.self) { index in
                 ModuleRowLink(item: items[index], language: language, density: density)
             }
         }
@@ -184,7 +184,7 @@ struct SystemView: View {
                     Text(Copy.text("manual", language)).font(.caption).foregroundStyle(DS.secondary)
                 }
             }
-            ForEach(systemItems.indices, id: \\.self) { index in
+            ForEach(systemItems.indices, id: \.self) { index in
                 ModuleRowLink(item: systemItems[index], language: language, density: density)
             }
             DSCard {
