@@ -103,7 +103,8 @@ struct ModuleListView: View {
     let density: InformationDensity
     var body: some View {
         PageScaffold(title: title, subtitle: subtitle) {
-            ForEach(items, id: \.0) { item in
+            ForEach(items.indices, id: \.self) { index in
+                let item = items[index]
                 NavigationLink {
                     FeatureListView(title: Copy.text(item.0, language), subtitle: Copy.text("not_implemented", language), symbol: item.1, language: language, density: density)
                 } label: {
