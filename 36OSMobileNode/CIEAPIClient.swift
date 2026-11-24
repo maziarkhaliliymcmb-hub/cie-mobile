@@ -100,7 +100,10 @@ struct CIEAPIClient {
 
     func healthCheck() async throws -> String {
         guard !token.isEmpty else { throw CIEAPIError.missingToken }
-        let url = baseURL.appending(path: "/v1/36os/knowledge/health")
+        let url = baseURL.appendingPathComponent("v1")
+            .appendingPathComponent("36os")
+            .appendingPathComponent("knowledge")
+            .appendingPathComponent("health")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = 20
