@@ -98,12 +98,8 @@ struct CIEAPIClient {
         self.session = session
     }
 
-    func healthCheck() async throws -> String {
-        guard !token.isEmpty else { throw CIEAPIError.missingToken }
-        let url = baseURL.appendingPathComponent("v1")
-            .appendingPathComponent("36os")
-            .appendingPathComponent("knowledge")
-            .appendingPathComponent("health")
+    private func get(_ path: [String]) async throws -> (Data, HTTPURLResponse) {
+        let url = path.reduce(baseURL) { $0.appendingPathComponent($1) }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = 20
@@ -115,7 +111,22 @@ struct CIEAPIClient {
             let body = String(data: data.prefix(512), encoding: .utf8) ?? "No response detail"
             throw CIEAPIError.httpStatus(http.statusCode, body)
         }
-        return "HTTP \(http.statusCode)"
+        return (data, http)
+    }
+
+    func healthCheck() async throws -> String {
+        guard !token.isEmpty else { throw CIEAPIError.missingToken }
+        // Authenticate first; the health endpoint alone is not an identity check.
+        let (identityData, _) = try await get(["v1", "agents", "identity"])
+        guard
+            let identity = try JSONSerialization.jsonObject(with: identityData) as? [String: Any],
+            let modelID = identity["model_id"] as? String,
+            let scopes = identity["scopes"] as? [String]
+        else {
+            throw CIEAPIError.nonHTTPResponse
+        }
+        let (_, healthResponse) = try await get(["v1", "36os", "knowledge", "health"])
+        return "\(modelID) · \(scopes.count) scopes · HTTP \(healthResponse.statusCode)"
     }
 }
 
@@ -130,7 +141,7 @@ final class ConnectionSettings: ObservableObject {
 
     init() {
         self.baseURL = UserDefaults.standard.string(forKey: "36os.cie.base-url")
-            ?? "https://collective-intelligence-engine-ndu1kagsi-36-3416.vercel.app"
+            ?? ""
         self.hasSavedToken = !SecureTokenStore.read().isEmpty
     }
 
