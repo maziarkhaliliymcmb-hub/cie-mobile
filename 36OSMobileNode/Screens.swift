@@ -159,6 +159,14 @@ struct SystemView: View {
     let density: InformationDensity
     @Binding var languageRaw: String
     @Binding var densityRaw: String
+    private var systemItems: [(String, String, String)] {
+        [
+            ("cie_connection","point.3.connected.trianglepath.dotted",""),("os_connection","externaldrive.connected.to.line.below",""),
+            ("creator","crown",""),("identity","person.badge.key",""),("security","shield.lefthalf.filled",""),
+            ("audit","doc.text.magnifyingglass",""),("backup","externaldrive",""),("versions","arrow.down.circle",""),
+            ("advanced","slider.horizontal.3","")
+        ]
+    }
     var body: some View {
         PageScaffold(title: Copy.text("system", language), subtitle: "Identity · Security · Governance · Infrastructure") {
             DSCard {
@@ -174,18 +182,7 @@ struct SystemView: View {
                     Text(Copy.text("manual", language)).font(.caption).foregroundStyle(DS.secondary)
                 }
             }
-            ForEach([
-                ("cie_connection","point.3.connected.trianglepath.dotted",""),("os_connection","externaldrive.connected.to.line.below",""),
-                ("creator","crown",""),("identity","person.badge.key",""),("security","shield.lefthalf.filled",""),
-                ("audit","doc.text.magnifyingglass",""),("backup","externaldrive",""),("versions","arrow.down.circle",""),
-                ("advanced","slider.horizontal.3","")
-            ].indices, id: \\.self) { index in
-                let systemItems = [
-                    ("cie_connection","point.3.connected.trianglepath.dotted",""),("os_connection","externaldrive.connected.to.line.below",""),
-                    ("creator","crown",""),("identity","person.badge.key",""),("security","shield.lefthalf.filled",""),
-                    ("audit","doc.text.magnifyingglass",""),("backup","externaldrive",""),("versions","arrow.down.circle",""),
-                    ("advanced","slider.horizontal.3","")
-                ]
+            ForEach(systemItems.indices, id: \\.self) { index in
                 ModuleRowLink(item: systemItems[index], language: language, density: density)
             }
             DSCard {
