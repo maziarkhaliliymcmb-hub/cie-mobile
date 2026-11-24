@@ -35,7 +35,12 @@ No Supabase service-role key or internal CIE-to-36OS credential belongs in the m
 - Tokens are never written to UserDefaults or logged.
 - The current client does not yet register or heartbeat a compute node. Those calls must wait until the corresponding authenticated CIE routes are implemented and deployed.
 
-## Telegram / TestFlight distribution
-The intended delivery channel is the existing Telegram bot. For iOS, the bot should deliver a TestFlight invitation link rather than an unsigned IPA. GitHub Actions can build and upload a signed archive to TestFlight, then send the configured invitation URL to Telegram.
+## iOS distribution without a paid Apple Developer membership
+- `.github/workflows/sidestore-ipa-release.yml` builds an unsigned device archive, packages it as an IPA, and sends the IPA to the configured Telegram chat using the Bot API.
+- This workflow requires only `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` repository Actions secrets. The bot must have been started by the recipient, and the configured chat must be able to receive documents.
+- The IPA is unsigned by design. SideStore signs it with the user's own Apple Account during installation; the IPA is not directly installable by tapping it in Telegram.
+- SideStore's initial installation/pairing requires a computer once. A free Apple Account is limited to three active sideloaded apps including SideStore, and apps generally need refreshing within the 7-day signing period. See the official SideStore installation guide and FAQ.
+- GitHub Actions workflow_dispatch can trigger the build and Telegram delivery. The workflow artifact is retained for seven days as a fallback.
 
-A release workflow requires an Apple Developer Program team, an App Store Connect API key, a registered App ID, and Telegram bot credentials. Required repository secrets are documented in `.github/workflows/testflight-release.yml`. Until these are configured, no installable IPA or TestFlight build is produced.
+## TestFlight distribution (optional later)
+The separate `.github/workflows/testflight-release.yml` remains available if a paid Apple Developer Program membership is obtained later. It requires App Store Connect credentials, an App ID, and the TestFlight public link in addition to Telegram credentials.
