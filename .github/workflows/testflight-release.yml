@@ -46,20 +46,25 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, os
-          path = os.path.join(os.environ["RUNNER_TEMP"], "appstore-connect-key.json")
+          root = os.environ["RUNNER_TEMP"]
+          key = os.environ["ASC_KEY_CONTENT"]
+          path = os.path.join(root, "appstore-connect-key.json")
           with open(path, "w") as f:
               json.dump({
                   "key_id": os.environ["ASC_KEY_ID"],
                   "issuer_id": os.environ["ASC_ISSUER_ID"],
-                  "key": os.environ["ASC_KEY_CONTENT"],
+                  "key": key,
                   "is_key_content_base64": False
               }, f)
-          print(path)
+          with open(os.path.join(root, "AuthKey.p8"), "w") as f:
+              f.write(key)
           PY
 
       - name: Archive iOS app
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           xcodebuild \
             -project 36OSMobileNode.xcodeproj \
@@ -69,6 +74,8 @@ jobs:
             -archivePath "$RUNNER_TEMP/36OSMobileNode.xcarchive" \
             -allowProvisioningUpdates \
             -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             archive
@@ -109,7 +116,7 @@ jobs:
           TESTFLIGHT_PUBLIC_LINK: ${{ secrets.TESTFLIGHT_PUBLIC_LINK }}
           RELEASE_NOTES: ${{ github.event.inputs.release_notes || '36OS Mobile Node test build uploaded.' }}
         run: |
-          MESSAGE="36OS Mobile Node — TestFlight build uploaded.\n$RELEASE_NOTES\nInstall: $TESTFLIGHT_PUBLIC_LINK"
+          MESSAGE=$(printf '36OS Mobile Node — TestFlight build uploaded.\n%s\nInstall: %s' "$RELEASE_NOTES" "$TESTFLIGHT_PUBLIC_LINK")
           curl --fail --silent --show-error \
             --request POST \
             "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
