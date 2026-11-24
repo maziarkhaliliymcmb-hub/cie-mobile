@@ -31,6 +31,9 @@ enum Copy {
             "pending":"Pending Approval","offline":"Offline","empty":"No data available",
             "preview_data":"Preview interface — live service data is not connected.",
             "not_implemented":"UI foundation only. Runtime integration is not enabled yet.",
+            "cie_endpoint":"CIE API Endpoint","api_token":"Scoped API Token","save_token":"Save Token",
+            "remove_token":"Remove Token","test_connection":"Test Connection","token_saved":"Token stored securely on this device.",
+            "token_missing":"No API token saved.","connection_settings":"Connection Settings",
             "status":"Status","platform":"Platform","protocol":"Protocol","trust":"Trust State",
             "permissions_note":"Sensitive actions require re-authentication and an audit event.",
             "emergency":"Emergency Stop","cancel":"Cancel"
@@ -57,6 +60,9 @@ enum Copy {
             "pending":"در انتظار تأیید","offline":"آفلاین","empty":"داده‌ای موجود نیست",
             "preview_data":"پیش‌نمایش رابط؛ داده زنده سرویس‌ها متصل نیست.",
             "not_implemented":"زیرساخت رابط کاربری؛ اتصال Runtime هنوز فعال نشده است.",
+            "cie_endpoint":"نشانی API سامانه CIE","api_token":"توکن دسترسی محدود API","save_token":"ذخیره توکن",
+            "remove_token":"حذف توکن","test_connection":"آزمایش اتصال","token_saved":"توکن به‌صورت امن روی این دستگاه ذخیره شده است.",
+            "token_missing":"توکن API ذخیره نشده است.","connection_settings":"تنظیمات اتصال",
             "status":"وضعیت","platform":"پلتفرم","protocol":"پروتکل","trust":"وضعیت اعتماد",
             "permissions_note":"عملیات حساس به احراز هویت مجدد و ثبت رویداد Audit نیاز دارند.",
             "emergency":"توقف اضطراری","cancel":"انصراف"
