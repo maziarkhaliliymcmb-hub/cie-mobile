@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "36OS Mobile Node",
+  "short_name": "36OS Node",
+  "description": "Mobile control surface for 36OS and CIE",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "lang": "en",
+  "icons": [
+    {"src":"./icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

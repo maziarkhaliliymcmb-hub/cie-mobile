@@ -1,0 +1,31 @@
+name: PWA validation
+
+on:
+  pull_request:
+    paths:
+      - "pwa/**"
+      - ".github/workflows/pwa-validation.yml"
+  push:
+    branches:
+      - "feature/36os-mobile-node-pwa"
+    paths:
+      - "pwa/**"
+      - ".github/workflows/pwa-validation.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript syntax
+        run: node --check pwa/app.js && node --check pwa/sw.js
+      - name: Validate manifest and required assets
+        run: |
+          node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('pwa/manifest.webmanifest','utf8')); if(!m.name || !m.start_url || !m.icons?.length) process.exit(1)"
+          test -s pwa/index.html
+          test -s pwa/styles.css
+          test -s pwa/icons/icon.svg
+          grep -q 'serviceWorker' pwa/app.js
