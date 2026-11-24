@@ -1,0 +1,117 @@
+name: TestFlight Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: "Short release note sent to Telegram"
+        required: false
+        default: "36OS Mobile Node test build is ready."
+  push:
+    tags:
+      - "ios-v*"
+
+jobs:
+  build-upload-notify:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Validate release secrets
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TESTFLIGHT_PUBLIC_LINK: ${{ secrets.TESTFLIGHT_PUBLIC_LINK }}
+        run: |
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_CONTENT APPLE_TEAM_ID TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID TESTFLIGHT_PUBLIC_LINK; do
+            if [ -z "${!name}" ]; then echo "Missing required secret: $name"; exit 1; fi
+          done
+
+      - name: Prepare App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          path = os.path.join(os.environ["RUNNER_TEMP"], "appstore-connect-key.json")
+          with open(path, "w") as f:
+              json.dump({
+                  "key_id": os.environ["ASC_KEY_ID"],
+                  "issuer_id": os.environ["ASC_ISSUER_ID"],
+                  "key": os.environ["ASC_KEY_CONTENT"],
+                  "is_key_content_base64": False
+              }, f)
+          print(path)
+          PY
+
+      - name: Archive iOS app
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild \
+            -project 36OSMobileNode.xcodeproj \
+            -scheme 36OSMobileNode \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/36OSMobileNode.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            archive
+
+      - name: Export App Store Connect IPA
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+          <key>method</key><string>app-store-connect</string>
+          <key>signingStyle</key><string>automatic</string>
+          <key>teamID</key><string>$APPLE_TEAM_ID</string>
+          <key>destination</key><string>export</string>
+          <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/36OSMobileNode.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -allowProvisioningUpdates
+
+      - name: Upload to TestFlight
+        run: |
+          gem install fastlane --no-document
+          fastlane pilot upload \
+            --ipa "$RUNNER_TEMP/export/36OSMobileNode.ipa" \
+            --api_key_path "$RUNNER_TEMP/appstore-connect-key.json" \
+            --skip_waiting_for_build_processing
+
+      - name: Notify Telegram bot channel
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TESTFLIGHT_PUBLIC_LINK: ${{ secrets.TESTFLIGHT_PUBLIC_LINK }}
+          RELEASE_NOTES: ${{ github.event.inputs.release_notes || '36OS Mobile Node test build uploaded.' }}
+        run: |
+          MESSAGE="36OS Mobile Node — TestFlight build uploaded.\n$RELEASE_NOTES\nInstall: $TESTFLIGHT_PUBLIC_LINK"
+          curl --fail --silent --show-error \
+            --request POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MESSAGE}"
