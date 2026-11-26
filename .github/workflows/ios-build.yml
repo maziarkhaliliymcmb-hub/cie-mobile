@@ -1,0 +1,25 @@
+name: iOS Build
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "feature/36os-mobile-node-app-shell"]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Build iOS Simulator target
+        run: |
+          xcodebuild \
+            -project 36OSMobileNode.xcodeproj \
+            -scheme 36OSMobileNode \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
