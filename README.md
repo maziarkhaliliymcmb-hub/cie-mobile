@@ -44,3 +44,21 @@ No Supabase service-role key or internal CIE-to-36OS credential belongs in the m
 
 ## TestFlight distribution (optional later)
 The separate `.github/workflows/testflight-release.yml` remains available if a paid Apple Developer Program membership is obtained later. It requires App Store Connect credentials, an App ID, and the TestFlight public link in addition to Telegram credentials.
+
+## On-device local model (iPhone)
+
+The first local inference implementation uses Apple's **Foundation Models** framework from the native SwiftUI app. On supported hardware and OS versions, the model runs on-device and can operate without a model-provider API key or a separate Ollama server.
+
+- Target device: iPhone 16 Pro Max (Apple lists iPhone 16 models as Apple Intelligence-capable).
+- Runtime: Apple's `FoundationModels` framework / `SystemLanguageModel.default`.
+- Availability: iOS 26 or later, Apple Intelligence enabled, model downloaded and ready, and a supported device/Siri language configuration.
+- First workload: bounded, advisory code QA on user-pasted excerpts (16 KB maximum).
+- The local model has no shell, file, GitHub, test-runner, deployment, or merge capability.
+- Source text stays in the app for this first proof of concept; this screen does not upload source or results to CIE.
+- The model is an OS-managed general-purpose model, not a dedicated coding model. Treat its findings as hypotheses and verify with CI and deterministic tests.
+
+Open Intelligence → Local Models in the app. The app checks runtime availability before inference. If the model is unavailable, it reports the platform reason rather than falling back to a cloud provider.
+
+### CIE integration boundary
+
+The native app already has a scoped CIE API client for authenticated identity and health checks. This first local-inference PR establishes the device runtime and UI only. Sending model results into CIE's analysis/task lifecycle is a separate integration gate: it requires a defined CIE agent identity, narrowly scoped token permissions, and a dedicated API contract. Do not grant the on-device model task-claim or repository-write privileges.
