@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090d16">
+  <meta name="description" content="36OS Mobile Node — secure mobile control surface for CIE and 36OS.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/icon.svg">
+  <link rel="stylesheet" href="./styles.css">
+  <title>36OS Mobile Node</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="36OS Home"><span class="brand-mark">36</span><span><b>36OS</b><small> MOBILE NODE</small></span></a>
+      <div class="top-actions"><span class="connection-pill"><i id="connection-dot"></i><span id="connection-label">Offline</span></span><button id="language-toggle" class="icon-button" aria-label="Change language">FA</button></div>
+    </header>
+    <main id="main-content">
+      <section class="page active" id="page-home">
+        <div class="eyebrow" data-i18n="command">COMMAND CENTER</div>
+        <div class="welcome-row"><div><h1 data-i18n="overview">System overview</h1><p class="muted" data-i18n="overview-sub">Your mobile window into the intelligence network.</p></div><span class="status-tag"><i></i><span data-i18n="local-ui">LOCAL UI</span></span></div>
+        <div class="hero-card"><div class="hero-orbit"><div class="orbit-ring"></div><div class="orbit-core">36</div></div><div><div class="eyebrow" data-i18n="node-status">NODE STATUS</div><h2 data-i18n="not-connected">Not connected</h2><p class="muted" data-i18n="connect-desc">Connect to CIE to load live system information.</p><button class="primary-button" data-go="system" data-i18n="configure">Configure connection <span>↗</span></button></div></div>
+        <div class="section-heading"><h3 data-i18n="quick">Quick access</h3><span class="muted" data-i18n="local-preview">Local preview</span></div>
+        <div class="quick-grid">
+          <button class="quick-card" data-go="compute"><span class="quick-icon">◈</span><b data-i18n="compute">Compute</b><small data-i18n="device-node">Device & node</small></button>
+          <button class="quick-card" data-go="workers"><span class="quick-icon">⌘</span><b data-i18n="workers">Workers</b><small data-i18n="fleet-tasks">Fleet & tasks</small></button>
+          <button class="quick-card" data-go="intelligence"><span class="quick-icon">✳</span><b data-i18n="intelligence">Intelligence</b><small data-i18n="models-lab">Models & lab</small></button>
+          <button class="quick-card" data-go="system"><span class="quick-icon">⚙</span><b data-i18n="system">System</b><small data-i18n="access-security">Access & security</small></button>
+        </div>
+        <div class="notice"><span>ⓘ</span><p data-i18n="preview-note">Preview mode: live metrics and worker controls remain disabled until authenticated CIE endpoints are connected.</p></div>
+      </section>
+      <section class="page" id="page-compute"><div class="eyebrow">36OS / NODE</div><h1 data-i18n="compute">Compute</h1><p class="muted" data-i18n="compute-sub">This device and distributed compute resources.</p><div class="panel-list"><article><span>◈</span><div><b data-i18n="this-device">This device</b><small data-i18n="device-pending">Registration pending</small></div><em class="tag-muted" data-i18n="not-enrolled">NOT ENROLLED</em></article><article><span>▤</span><div><b data-i18n="hardware">Hardware monitor</b><small data-i18n="awaiting-runtime">Awaiting native runtime integration</small></div></article><article><span>⇄</span><div><b data-i18n="network">Network & connectivity</b><small data-i18n="connection-settings">Connection settings</small></div></article></div><div class="notice"><span>ⓘ</span><p data-i18n="compute-note">A browser-installed PWA cannot provide unrestricted background compute or full hardware telemetry.</p></div></section>
+      <section class="page" id="page-workers"><div class="eyebrow">36OS / EXECUTION</div><h1 data-i18n="workers">Workers</h1><p class="muted" data-i18n="workers-sub">Worker fleet, task queue and execution history.</p><div class="empty-state"><div>⌘</div><h3 data-i18n="awaiting-cie">Awaiting CIE connection</h3><p data-i18n="workers-note">Worker registry and task execution will appear after authenticated APIs are available.</p></div></section>
+      <section class="page" id="page-intelligence"><div class="eyebrow">36OS / INTELLIGENCE</div><h1 data-i18n="intelligence">Intelligence</h1><p class="muted" data-i18n="intel-sub">Local models, experiments and controlled evolution.</p><div class="panel-list"><article><span>✳</span><div><b data-i18n="local-models">Local AI models</b><small data-i18n="runtime-not-linked">Runtime not linked</small></div></article><article><span>⌬</span><div><b data-i18n="algorithm-lab">Algorithm laboratory</b><small data-i18n="proposal-only">Proposal-only governance</small></div></article><article><span>◇</span><div><b data-i18n="evolution">Evolution proposals</b><small data-i18n="human-approval">Human approval required</small></div></article></div></section>
+      <section class="page" id="page-system"><div class="eyebrow">36OS / CONTROL</div><h1 data-i18n="system">System</h1><p class="muted" data-i18n="system-sub">Identity, secure connection and system controls.</p><div class="settings-card"><label for="api-url" data-i18n="cie-url">CIE API base URL</label><input id="api-url" type="url" placeholder="https://your-cie-domain.example" autocomplete="url"><label for="api-token" data-i18n="access-token">Scoped access token</label><input id="api-token" type="password" placeholder="Bearer token" autocomplete="off"><p class="field-help" data-i18n="token-help">Token is held in this browser tab's session only. Do not use an administrator or service-role key.</p><div class="button-row"><button id="test-connection" class="primary-button" data-i18n="test-connection">Test connection</button><button id="clear-session" class="secondary-button" data-i18n="clear">Clear</button></div><p id="connection-result" class="result-line" role="status"></p></div><div class="notice"><span>⌑</span><p data-i18n="security-note">Use HTTPS and a restricted user token. No Supabase service-role key or internal CIE credential belongs in this app.</p></div><div class="about-line"><span>36OS Mobile Node</span><span>Web build 0.1.0</span></div></section>
+    </main>
+    <nav class="bottom-nav" aria-label="Primary navigation">
+      <button class="nav-item active" data-page="home"><span>⌂</span><small data-i18n="home">Home</small></button>
+      <button class="nav-item" data-page="compute"><span>◈</span><small data-i18n="compute">Compute</small></button>
+      <button class="nav-item" data-page="workers"><span>⌘</span><small data-i18n="workers">Workers</small></button>
+      <button class="nav-item" data-page="intelligence"><span>✳</span><small data-i18n="intelligence">Intelligence</small></button>
+      <button class="nav-item" data-page="system"><span>⚙</span><small data-i18n="system">System</small></button>
+    </nav>
+  </div>
+  <script src="./app.js" defer></script>
+</body>
+</html>
