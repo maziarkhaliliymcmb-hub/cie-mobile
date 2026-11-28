@@ -57,7 +57,7 @@ final class LocalModelService: ObservableObject {
             \(trimmed)
             </source>
             """,
-            maximumInputBytes: 16_000
+            maximumInputBytes: 16_384
         )
 
         do {
