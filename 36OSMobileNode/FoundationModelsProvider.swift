@@ -52,6 +52,8 @@ final class FoundationModelsProvider: LocalInferenceProvider {
                 modelID: "system-managed",
                 elapsedMilliseconds: Int(Date().timeIntervalSince(start) * 1_000)
             )
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             throw LocalInferenceError.providerFailure(error.localizedDescription)
         }
