@@ -29,12 +29,13 @@ jobs:
           test -s pwa/styles.css
           test -s pwa/icons/icon.svg
           grep -q 'serviceWorker' pwa/app.js
-      - name: Verify API responses are never intercepted by the service worker
+      - name: Verify service-worker cache isolation and API bypass
         run: |
           node <<'NODE'
           const fs = require("node:fs");
           const vm = require("node:vm");
           const handlers = {};
+          const deleted = [];
           const cache = {
             addAll: async () => {},
             match: async () => undefined,
@@ -49,12 +50,17 @@ jobs:
             URL,
             caches: {
               open: async () => cache,
-              keys: async () => ["old-cache", "36os-mobile-node-shell-v2"],
-              delete: async () => true
+              keys: async () => [
+                "other-app-cache",
+                "36os-mobile-node-shell-v2",
+                "36os-mobile-node-shell-v3"
+              ],
+              delete: async (key) => { deleted.push(key); return true; }
             },
             fetch: async () => ({ ok: true, clone: () => ({}) })
           };
           vm.runInNewContext(fs.readFileSync("pwa/sw.js", "utf8"), context);
+
           for (const url of [
             "https://example.test/v1/agents/identity",
             "https://example.test/v1/36os/knowledge/health"
@@ -66,11 +72,24 @@ jobs:
             });
             if (intercepted) throw new Error("Service worker intercepted API response: " + url);
           }
+
           let staticAssetIntercepted = false;
           handlers.fetch({
             request: { method: "GET", url: "https://example.test/index.html" },
             respondWith: () => { staticAssetIntercepted = true; }
           });
           if (!staticAssetIntercepted) throw new Error("Static app shell is not cache-enabled");
-          console.log("Service worker caches static assets only; API requests bypass it.");
+
+          (async () => {
+            let activation;
+            handlers.activate({ waitUntil: (promise) => { activation = promise; } });
+            await activation;
+            if (deleted.includes("other-app-cache")) {
+              throw new Error("Service worker deleted a cache owned by another app");
+            }
+            if (!deleted.includes("36os-mobile-node-shell-v2")) {
+              throw new Error("Previous 36OS shell cache was not cleaned up");
+            }
+            console.log("API requests bypass cache; static assets cache; unrelated caches preserved.");
+          })().catch((error) => { console.error(error); process.exit(1); });
           NODE
