@@ -100,11 +100,22 @@ struct ModuleRowLink: View {
     let language: AppLanguage
     let density: InformationDensity
     var body: some View {
-        NavigationLink {
-            FeatureListView(title: Copy.text(item.0, language), subtitle: Copy.text("not_implemented", language), symbol: item.1, language: language, density: density)
-        } label: {
-            DSCard { FeatureRow(title: Copy.text(item.0, language), subtitle: Copy.text("preview_data", language), symbol: item.1) }
-        }.buttonStyle(.plain)
+        Group {
+            if item.0 == "local_models" {
+                NavigationLink {
+                    LocalModelView()
+                } label: {
+                    DSCard { FeatureRow(title: Copy.text(item.0, language), subtitle: "On-device inference · Apple Foundation Models", symbol: item.1) }
+                }
+            } else {
+                NavigationLink {
+                    FeatureListView(title: Copy.text(item.0, language), subtitle: Copy.text("not_implemented", language), symbol: item.1, language: language, density: density)
+                } label: {
+                    DSCard { FeatureRow(title: Copy.text(item.0, language), subtitle: Copy.text("preview_data", language), symbol: item.1) }
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
 struct ModuleListView: View {
