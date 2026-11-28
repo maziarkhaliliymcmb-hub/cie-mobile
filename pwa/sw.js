@@ -1,4 +1,5 @@
-const CACHE = "36os-mobile-node-shell-v2";
+const CACHE_PREFIX = "36os-mobile-node-shell-";
+const CACHE = "36os-mobile-node-shell-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -21,7 +22,9 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))
+        keys
+          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE)
+          .map((key) => caches.delete(key))
       )
     )
   );
